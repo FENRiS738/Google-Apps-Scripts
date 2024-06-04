@@ -10,6 +10,11 @@ function onEdit(e) {
     for (var i = 1; i <= newRows; i++) {
       var newRow = previousNumRows + i;
       var newRowValues = sheet.getRange(newRow, 1, 1, sheet.getLastColumn()).getValues()[0];
+      /*
+      { 
+        Implement your webhook call Here
+      }
+      */
       Logger.log('New row added at row ' + newRow + ': ' + newRowValues);
 
     }
