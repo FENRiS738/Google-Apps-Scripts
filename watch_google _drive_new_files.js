@@ -18,6 +18,11 @@ function watchNewFiles() {
       }
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        /*
+        { 
+          Implement your webhook call Here
+        }
+        */
         Logger.log('%s (ID: %s)', file.name, file.id);
       }
       pageToken = files.nextPageToken;
