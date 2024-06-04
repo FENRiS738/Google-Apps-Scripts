@@ -2,9 +2,9 @@ function watchNewFiles() {
   var previousTime = minusOneMinute();
   var currentTime = getCurrentTime();
 
-  const query = '"1FeDIqEqo740xJCJ02jwWY1yOvoBjChPj" in parents and trashed = false and createdTime >= "' + previousTime + '" and createdTime <= "' + currentTime + '"';
-  let pageToken = null;
-  var payloadData = [];
+  const query = 'trashed = false and createdTime >= "' + previousTime + '" and createdTime <= "' + currentTime + '"';
+  var pageToken = null;
+
   do {
     try {
       data = Drive.Files.list({
@@ -12,18 +12,28 @@ function watchNewFiles() {
         pageSize: 100,
         pageToken: pageToken,
       });
-      let files = data.files;
+
+      var files = data.files;
+      
       if (!files || files.length === 0) {
         Logger.log('No Files found.');
         return;
       }
-      for (let i = 0; i < files.length; i++) {
+
+      for (var i = 0; i < files.length; i++) {
         const file = files[i];
-        payloadData.push(file)
-        Logger.log('%s (ID: %s)', file.name, file.id);
+        if (file.mimeType === "application/vnd.google-apps.folder") {
+          files.pop(file);
+        }
       }
+
+      if (files.length === 0) {
+        Logger.log('No Files found. (2)');
+        return;
+      }
+
       pageToken = files.nextPageToken;
-      callWebhook(payloadData)
+      callWebhook(files)
     } catch (err) {
       Logger.log('Failed with error %s', err.message);
     }
