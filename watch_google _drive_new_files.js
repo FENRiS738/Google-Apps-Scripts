@@ -4,6 +4,7 @@ function watchNewFiles() {
 
   const query = '"1FeDIqEqo740xJCJ02jwWY1yOvoBjChPj" in parents and trashed = false and createdTime >= "' + previousTime + '" and createdTime <= "' + currentTime + '"';
   let pageToken = null;
+  var payloadData = [];
   do {
     try {
       data = Drive.Files.list({
@@ -18,14 +19,11 @@ function watchNewFiles() {
       }
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        /*
-        { 
-          Implement your webhook call Here
-        }
-        */
+        payloadData.push(file)
         Logger.log('%s (ID: %s)', file.name, file.id);
       }
       pageToken = files.nextPageToken;
+      callWebhook(payloadData)
     } catch (err) {
       Logger.log('Failed with error %s', err.message);
     }
@@ -34,6 +32,28 @@ function watchNewFiles() {
 
 function setupTrigger() {
   ScriptApp.newTrigger('watchNewFiles').timeBased().everyMinutes(1).create();
+}
+
+function callWebhook(payload) {
+  // Convert payload to JSON string (if not already)
+  const jsonString = typeof payload === 'object' ? JSON.stringify(payload) : payload;
+
+  // Set up the request options
+  const options = {
+    "method": "post",
+    "payload": jsonString,
+    "contentType": "application/json"  // Set content type for JSON
+  };
+
+  // Fetch the URL with options
+  const response = UrlFetchApp.fetch("https://hook.eu1.make.com/w6ddcib2w1vw7jx3g2a132enx9newtu3", options);
+
+  // Check response code (optional)
+  if (response.getResponseCode() === 200) {
+    Logger.log("Webhook call successful!");
+  } else {
+    Logger.log("Error: " + response.getResponseCode());
+  }
 }
 
 function minusOneMinute() {
